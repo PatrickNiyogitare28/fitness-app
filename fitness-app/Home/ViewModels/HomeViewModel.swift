@@ -8,6 +8,12 @@
 import SwiftUI
 
 class HomeViewModel: ObservableObject {
+    let healthManager = HealthManager.shared
+    
+    var calories: Int = 123
+    var active: Int = 54
+    var stand: Int = 8
+    
     var mockActivities = [
          Activity(id: 0, title: "Today steps", subtitle: "Goal 10,000", image: "figure.walk", tinColor: .green, amount: "9,500"),
         
@@ -29,7 +35,34 @@ class HomeViewModel: ObservableObject {
         Workout(id: 4, title: "Swimming", image: "figure.run", duration: "34 mins", date: "Sept 1", calories: "423 kcal", tinColor: .orange)
     ]
     
-    var calories: Int = 123
-    var active: Int = 54
-    var stand: Int = 8
+    init(){
+        Task {
+            do {
+                try await healthManager.requestHealthKitAccess()
+                healthManager.fetchTodayCaloriesBurned { result in
+                 switch result {
+                 case .success(let success):
+                     print(success)
+                 case .failure(let failure):
+                     print(failure.localizedDescription)
+                    }
+                }
+                
+                healthManager.fetchTodayStandHours { result in
+                    switch result {
+                    case .success(let success):
+                        print(success)
+                    case .failure(let failure):
+                        print(failure.localizedDescription)
+                       }
+                }
+            }
+            catch {
+                print(error.localizedDescription)
+            }
+        }
+        
+       
+    }
+    
 }
